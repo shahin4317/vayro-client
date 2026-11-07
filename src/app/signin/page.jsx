@@ -18,8 +18,10 @@ import {
 import { Button } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
+  const router = useRouter()
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -29,7 +31,6 @@ const Page = () => {
     const { data, error } = await authClient.signIn.email({
       email,
       password,
-      callbackURL: "/",
     });
 
     if (data) {
@@ -41,6 +42,18 @@ const Page = () => {
     }
 
     console.log(data, error);
+
+    const role = data?.user?.role
+    toast.success('Login Success')
+    if(role === 'admin'){
+      router.replace('/dashboard/admin')
+    }
+    else if(role === 'staff'){
+      router.replace('/dashboard/staff')
+    }
+    else{
+      router.replace('/')
+    }
   };
 
   const [showpassword, setShowPassword] = useState(false);

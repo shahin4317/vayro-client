@@ -14,17 +14,12 @@ import toast from "react-hot-toast";
 
 const Page = () => {
   const router = useRouter();
-
   const [showPassword, setShowPassword] = useState(false);
-
-
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
     const form = e.currentTarget;
-
     const name = form.name.value.trim();
     const email = form.email.value.trim().toLowerCase();
     const password = form.password.value;
@@ -32,16 +27,13 @@ const Page = () => {
       toast.error("Password must be at least 8 characters.");
       return;
     }
-
-
     setLoading(true);
-
     try {
       const { data, error } = await authClient.signUp.email({
         name,
         email,
         password,
-        callbackURL: "/",
+        
       });
 
       if (error) {
@@ -57,8 +49,16 @@ const Page = () => {
       }
 
       toast.success("Account created successfully!");
-
-      router.replace("/");
+     const role = data?.user?.role 
+     if(role === 'admin'){
+      router.replace('/dashboard/admin')
+     }
+     else if(role === 'staff'){
+      router.replace('/dashboard/staff')
+     }
+    else {
+      router.replace('/')
+    }
       router.refresh();
     } catch (error) {
       console.error("Signup error:", error);
@@ -70,6 +70,8 @@ const Page = () => {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className="flex min-h-dvh flex-col">
