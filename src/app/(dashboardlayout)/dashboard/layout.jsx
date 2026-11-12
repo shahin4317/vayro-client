@@ -24,6 +24,7 @@ import {
   FiUser,
   FiLogOut,
   FiX,
+  FiChevronRight,
 } from 'react-icons/fi';
 
 
@@ -91,7 +92,7 @@ function LoadingScreen() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-[#F7F7F7]">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E5E5E5] border-t-[#000000]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#E5E5E5] border-t-black" />
         <p className="text-sm text-[#737373]">
           Loading workspace...
         </p>
@@ -114,19 +115,14 @@ export default function DashboardLayout({ children }) {
   const [loading, setLoading] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-
-  // ========================================
-  // CLOSE MOBILE SIDEBAR ON ROUTE CHANGE
-  // ========================================
+  // Close mobile sidebar after navigation
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
 
-  // ========================================
-  // GET AUTHENTICATED SESSION
-  // ========================================
+  // Get authenticated session
 
   useEffect(() => {
 
@@ -174,9 +170,7 @@ export default function DashboardLayout({ children }) {
   }, [router]);
 
 
-  // ========================================
-  // USER ROLE
-  // ========================================
+  // User and role
 
   const user = session?.user;
 
@@ -194,9 +188,7 @@ export default function DashboardLayout({ children }) {
       : null;
 
 
-  // ========================================
-  // ROLE BASED ROUTE PROTECTION
-  // ========================================
+  // Role protection
 
   const isBlockedRoute =
     (isAdmin && pathname.startsWith('/dashboard/staff')) ||
@@ -211,7 +203,7 @@ export default function DashboardLayout({ children }) {
       return;
     }
 
-    if (!userDashboard) {
+    if (!userDashboard) { 
       router.replace('/');
       return;
     }
@@ -230,9 +222,7 @@ export default function DashboardLayout({ children }) {
   ]);
 
 
-  // ========================================
-  // LOADING / REDIRECT
-  // ========================================
+  // Loading and redirect
 
   if (
     loading ||
@@ -245,16 +235,9 @@ export default function DashboardLayout({ children }) {
   }
 
 
-  // ========================================
-  // ROLE BASED MENU
-  // ========================================
+  // Role based navigation
 
   const menu = isAdmin ? adminMenu : staffMenu;
-
-
-  // ========================================
-  // ACTIVE NAVIGATION
-  // ========================================
 
   const allItems = menu.flatMap(group => group.items);
 
@@ -266,9 +249,7 @@ export default function DashboardLayout({ children }) {
     .sort((a, b) => b.href.length - a.href.length)[0];
 
 
-  // ========================================
-  // LOGOUT
-  // ========================================
+  // Logout
 
   const handleLogout = async () => {
 
@@ -288,16 +269,47 @@ export default function DashboardLayout({ children }) {
   };
 
 
-  // ========================================
+  // User avatar
+
+  const UserAvatar = ({ size = 'normal' }) => {
+
+    const dimensions = size === 'large'
+      ? 'h-10 w-10'
+      : 'h-9 w-9';
+
+    if (user.image) {
+      return (
+        <img
+          src={user.image}
+          alt={user.name || 'User'}
+          className={`${dimensions} shrink-0 rounded-full border border-[#E5E5E5] object-cover`}
+        />
+      );
+    }
+
+    return (
+      <div className={`
+        ${dimensions}
+        flex shrink-0 items-center justify-center
+        rounded-full bg-[#F0F0F0] text-[#3C3C3C]
+      `}>
+        <FiUser size={18} />
+      </div>
+    );
+
+  };
+
+
+  // ==========================================
   // MAIN LAYOUT
-  // ========================================
+  // ==========================================
 
   return (
 
     <div className="
       min-h-dvh w-full overflow-x-clip
       bg-[#F7F7F7]
-      lg:grid lg:grid-cols-[272px_minmax(0,1fr)]
+      lg:grid lg:grid-cols-[260px_minmax(0,1fr)]
       lg:gap-4 lg:p-4
     ">
 
@@ -316,61 +328,57 @@ export default function DashboardLayout({ children }) {
       )}
 
 
-      {/* SIDEBAR */}
+      {/* ==================================
+          SIDEBAR
+      ================================== */}
 
       <aside
         className={`
           fixed inset-y-0 left-0 z-50
-          flex h-dvh w-[min(88vw,288px)]
+          flex h-dvh w-[min(86vw,270px)]
           flex-col overflow-hidden
           border-r border-[#E5E5E5]
           bg-white
           transition-transform duration-300 ease-in-out
+
           lg:sticky lg:top-4
           lg:h-[calc(100dvh-2rem)]
-          lg:w-[272px]
+          lg:w-[260px]
           lg:translate-x-0
-          lg:rounded-2xl lg:border
+          lg:rounded-2xl
+          lg:border
+
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
 
-        {/* BRAND HEADER */}
+        {/* BRAND */}
 
         <div className="
-          flex h-[64px] shrink-0
+          flex h-[66px] shrink-0
           items-center justify-between
-          border-b border-[#E5E5E5]
-          px-4
+          border-b border-[#EEEEEE]
+          px-5
         ">
 
-          <Link
-            href={userDashboard}
-            className="inline-flex items-center rounded-md bg-black px-3 py-1.5"
-          >
-
-            <Image
-              src={logo}
-              alt="VAYRO"
-              width={115}
-              height={40}
-              priority
-              className="h-auto w-[115px] object-contain"
-            />
-
+          <Link href={userDashboard}>
+            <div className="rounded-md bg-black px-3 py-1.5">
+              <Image
+                src={logo}
+                alt="VAYRO"
+                width={105}
+                height={38}
+                priority
+                className="h-auto w-[105px] object-contain"
+              />
+            </div>
           </Link>
-
 
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
             aria-label="Close sidebar"
-            className="
-              rounded-lg p-2
-              text-[#3C3C3C]
-              hover:bg-[#F7F7F7]
-              lg:hidden
-            "
+            className="rounded-lg p-2 text-[#3C3C3C] hover:bg-[#F7F7F7] lg:hidden"
           >
             <FiX size={20} />
           </button>
@@ -378,58 +386,57 @@ export default function DashboardLayout({ children }) {
         </div>
 
 
-        {/* USER PROFILE */}
+        {/* USER PROFILE + SIGN OUT (TOP) */}
 
         <div className="
-          flex shrink-0 items-center gap-3
-          border-b border-[#E5E5E5]
-          px-4 py-3
+          shrink-0 border-b border-[#EEEEEE]
+          px-4 py-4
         ">
 
-          {user.image ? (
+          <div className="flex items-center gap-3">
 
-            <img
-              src={user.image}
-              alt={user.name || 'User'}
-              className="
-                h-10 w-10 shrink-0
-                rounded-full
-                border border-[#E5E5E5]
-                object-cover
-              "
-            />
+            <UserAvatar size="large" />
 
-          ) : (
+            <div className="min-w-0 flex-1">
 
-            <div className="
-              flex h-10 w-10 shrink-0
-              items-center justify-center
-              rounded-full bg-[#F7F7F7]
-              text-[#3C3C3C]
-            ">
-              <FiUser size={19} />
+              <p className="truncate text-[13px] font-semibold text-[#171717]">
+                {user.name || 'VAYRO User'}
+              </p>
+
+              <p className="mt-0.5 truncate text-[11px] text-[#737373]">
+                {user.email}
+              </p>
+
+              <div className="mt-1.5 flex items-center gap-1.5">
+
+                <span className="h-1.5 w-1.5 rounded-full bg-[#3C3C3C]" />
+
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#555555]">
+                  {role} workspace
+                </span>
+
+              </div>
+
             </div>
 
-          )}
-
-
-          <div className="min-w-0 flex-1">
-
-            <p className="truncate text-[13px] font-semibold text-black">
-              {user.name || 'VAYRO User'}
-            </p>
-
-            <p className="mt-0.5 truncate text-[11px] text-[#737373]">
-              {user.email}
-            </p>
-
-            <p className="
-              mt-1 text-[10px]
-              font-semibold uppercase
-              tracking-wider text-[#737373]
-            ">
-              {role} workspace
-            </p>
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Sign Out"
+              aria-label="Sign Out"
+              className="
+                flex h-9 w-9 shrink-0
+                items-center justify-center
+                rounded-lg border border-[#E5E5E5]
+                text-[#737373]
+                transition-colors
+                hover:border-black
+                hover:bg-black
+                hover:text-white
+              "
+            >
+              <FiLogOut size={17} />
+            </button>
 
           </div>
 
@@ -444,29 +451,24 @@ export default function DashboardLayout({ children }) {
             min-h-0 flex-1
             overflow-x-hidden overflow-y-auto
             overscroll-contain
-            px-3 py-5
+            px-3 py-6
           "
         >
 
-          <div className="space-y-6">
+          <div className="space-y-7">
 
             {menu.map(group => (
 
               <div key={group.title}>
 
-                {/* GROUP TITLE */}
-
                 <p className="
-                  mb-2.5 px-3
+                  mb-3 px-3
                   text-[10px] font-bold
                   tracking-[0.16em]
-                  text-[#737373]
+                  text-[#999999]
                 ">
                   {group.title}
                 </p>
-
-
-                {/* MENU ITEMS */}
 
                 <div className="space-y-1">
 
@@ -484,24 +486,25 @@ export default function DashboardLayout({ children }) {
                         aria-current={active ? 'page' : undefined}
                         onClick={() => setMobileOpen(false)}
                         className={`
-                          group flex min-h-[48px] w-full
+                          group flex min-h-[46px] w-full
                           items-center gap-3
-                          rounded-xl px-3.5 py-3
-                          text-sm font-medium
-                          transition-colors duration-200
+                          rounded-lg px-3.5 py-3
+                          text-[13px] font-medium
+                          transition-all duration-200
                           focus-visible:outline-none
                           focus-visible:ring-2
                           focus-visible:ring-[#3C3C3C]
+
                           ${
                             active
                               ? 'bg-black text-white'
-                              : 'text-[#3C3C3C] hover:bg-[#F7F7F7] hover:text-black'
+                              : 'text-[#555555] hover:bg-[#F3F3F3] hover:text-black'
                           }
                         `}
                       >
 
                         <Icon
-                          size={19}
+                          size={18}
                           strokeWidth={1.8}
                           className="shrink-0"
                         />
@@ -511,12 +514,10 @@ export default function DashboardLayout({ children }) {
                         </span>
 
                         {active && (
-
-                          <span className="
-                            h-1.5 w-1.5 shrink-0
-                            rounded-full bg-white
-                          " />
-
+                          <FiChevronRight
+                            size={15}
+                            className="shrink-0"
+                          />
                         )}
 
                       </Link>
@@ -536,39 +537,14 @@ export default function DashboardLayout({ children }) {
         </nav>
 
 
-        {/* FIXED SIDEBAR FOOTER */}
+        {/* SIDEBAR FOOTER */}
 
         <div className="
-          shrink-0 border-t border-[#E5E5E5]
-          bg-white px-3 py-3
+          shrink-0 border-t border-[#EEEEEE]
+          px-4 py-3
         ">
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="
-              flex min-h-[46px] w-full
-              items-center gap-3
-              rounded-xl px-3.5
-              text-sm font-medium
-              text-[#3C3C3C]
-              transition-colors
-              hover:bg-[#F7F7F7]
-              hover:text-black
-            "
-          >
-
-            <FiLogOut size={19} />
-
-            <span>Sign Out</span>
-
-          </button>
-
-
-          <p className="
-            mt-1 text-center
-            text-[10px] text-[#737373]
-          ">
+          <p className="text-center text-[10px] font-medium tracking-wider text-[#999999]">
             VAYRO COMMERCE © 2026
           </p>
 
@@ -577,63 +553,81 @@ export default function DashboardLayout({ children }) {
       </aside>
 
 
-      {/* MAIN CONTENT FRAME */}
+      {/* ==================================
+          MAIN FRAME
+      ================================== */}
 
       <div className="
         flex min-h-dvh min-w-0
         flex-col bg-white
+
         lg:min-h-[calc(100dvh-2rem)]
         lg:rounded-2xl
         lg:border lg:border-[#E5E5E5]
       ">
 
 
-        {/* TOP HEADER */}
+        {/* ==================================
+            TOPBAR
+        ================================== */}
 
         <header className="
           sticky top-0 z-30
-          flex h-[72px] shrink-0
+          flex h-[68px] shrink-0
           items-center justify-between
-          border-b border-[#E5E5E5]
+          gap-3
+          border-b border-[#EEEEEE]
           bg-white
-          px-4 sm:px-6 lg:px-8
+          px-4 sm:px-6 lg:px-7
           lg:rounded-t-2xl
         ">
 
 
-          {/* LEFT HEADER */}
+          {/* LEFT SIDE */}
 
           <div className="flex min-w-0 items-center gap-3">
+
+            {/* MOBILE MENU */}
 
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
               aria-label="Open sidebar"
               className="
-                rounded-lg p-2
+                flex h-9 w-9 shrink-0
+                items-center justify-center
+                rounded-lg border border-[#E5E5E5]
                 text-[#3C3C3C]
                 transition hover:bg-[#F7F7F7]
                 lg:hidden
               "
             >
-              <FiMenu size={21} />
+              <FiMenu size={19} />
             </button>
 
 
+            {/* PAGE TITLE */}
+
             <div className="min-w-0">
 
-              <p className="
-                truncate text-[10px]
-                font-medium tracking-[0.13em]
-                text-[#737373]
-              ">
-                VAYRO / {role.toUpperCase()}
-              </p>
+              <div className="hidden items-center gap-2 sm:flex">
+
+                <span className="text-[10px] font-medium tracking-wider text-[#999999]">
+                  VAYRO
+                </span>
+
+                <span className="text-[#CCCCCC]">/</span>
+
+                <span className="text-[10px] font-medium uppercase tracking-wider text-[#737373]">
+                  {role}
+                </span>
+
+              </div>
 
               <h1 className="
-                mt-1 truncate
-                text-sm font-semibold
-                text-black sm:text-base
+                truncate text-sm font-semibold
+                text-[#171717]
+                sm:mt-1 sm:text-base
               ">
                 {activeItem?.label || 'Dashboard'}
               </h1>
@@ -643,65 +637,49 @@ export default function DashboardLayout({ children }) {
           </div>
 
 
-          {/* RIGHT HEADER */}
+          {/* RIGHT SIDE */}
 
-          <div className="flex shrink-0 items-center gap-3">
-
-            <div className="hidden text-right sm:block">
-
-              <p className="
-                max-w-[180px] truncate
-                text-xs font-semibold text-black
-              ">
-                {user.name || user.email}
-              </p>
-
-              <p className="
-                mt-1 text-[10px]
-                capitalize text-[#737373]
-              ">
-                {role}
-              </p>
-
-            </div>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
 
 
-            {user.image ? (
+            {/* SEPARATOR */}
 
-              <img
-                src={user.image}
-                alt={user.name || 'User'}
-                className="
-                  h-9 w-9 rounded-full
-                  border border-[#E5E5E5]
-                  object-cover
-                "
-              />
+            <div className="hidden h-7 w-px bg-[#E5E5E5] sm:block" />
 
-            ) : (
 
-              <div className="
-                flex h-9 w-9
-                items-center justify-center
-                rounded-full bg-[#F7F7F7]
-                text-[#3C3C3C]
-              ">
-                <FiUser size={18} />
+            {/* USER PROFILE */}
+
+            <div className="flex items-center gap-2.5">
+
+              <div className="hidden text-right sm:block">
+
+                <p className="max-w-[150px] truncate text-xs font-semibold text-[#171717]">
+                  {user.name || user.email}
+                </p>
+
+                <p className="mt-0.5 text-[10px] capitalize text-[#888888]">
+                  {role}
+                </p>
+
               </div>
 
-            )}
+              <UserAvatar />
+
+            </div>
 
           </div>
 
         </header>
 
 
-        {/* PAGE CONTENT */}
+        {/* ==================================
+            PAGE CONTENT
+        ================================== */}
 
         <main className="
           min-h-0 flex-1
           bg-[#F7F7F7]
-          p-4 sm:p-6 lg:p-8
+          p-4 sm:p-6 lg:p-7
           lg:rounded-b-2xl
         ">
 
