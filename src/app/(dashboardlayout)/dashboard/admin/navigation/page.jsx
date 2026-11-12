@@ -2,7 +2,8 @@
 'use client';
 
 import { useState } from 'react';
-
+import { addNevigation } from '@/lib/api/admin/action';
+import toast from 'react-hot-toast';
 import {
   FiPlus,
   FiSearch,
@@ -18,17 +19,7 @@ import {
 
 
 // DEMO CATEGORY DATA
-const initialCategories = [
-  { id: '1', name: 'Shirt', slug: 'shirt', parentId: null, showInNav: true },
-  { id: '2', name: 'Denim Shirt', slug: 'denim-shirt', parentId: '1', showInNav: true },
-  { id: '3', name: 'Solid Shirt', slug: 'solid-shirt', parentId: '1', showInNav: true },
-  { id: '4', name: 'Checked Shirt', slug: 'checked-shirt', parentId: '1', showInNav: true },
-  { id: '5', name: 'Panjabi', slug: 'panjabi', parentId: null, showInNav: true },
-  { id: '6', name: 'Kabli', slug: 'kabli', parentId: '5', showInNav: true },
-  { id: '7', name: 'T-Shirt', slug: 't-shirt', parentId: null, showInNav: true },
-  { id: '8', name: 'Jacket', slug: 'jacket', parentId: null, showInNav: true },
-  { id: '9', name: 'Pant', slug: 'pant', parentId: null, showInNav: true },
-];
+
 
 
 // CREATE SLUG
@@ -43,7 +34,7 @@ const makeSlug = (value) => {
 
 export default function NavigationPage() {
 
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
 
   const [form, setForm] = useState({
@@ -122,7 +113,8 @@ export default function NavigationPage() {
 
 
   // SAVE CATEGORY
-  const handleSubmit = (e) => {
+ 
+const handleSubmit = async (e) => {
 
     e.preventDefault();
 
@@ -130,86 +122,123 @@ export default function NavigationPage() {
     const slug = makeSlug(form.slug || form.name);
 
     if (!name || !slug) {
-      setMessage('Please enter category name.');
-      return;
+        setMessage('Please enter category name.');
+        return;
     }
 
     // CHECK DUPLICATE SLUG
     const duplicate = categories.find(
-      (item) =>
-        item.slug === slug &&
-        item.id !== form.id
+        (item) =>
+            item.slug === slug &&
+            item.id !== form.id
     );
 
     if (duplicate) {
-      setMessage('This category URL already exists.');
-      return;
+        setMessage('This category URL already exists.');
+        return;
     }
 
     // CHECK PARENT CATEGORY
     if (form.parentId) {
 
-      const parentExists = categories.some(
-        (item) =>
-          item.id === form.parentId &&
-          !item.parentId
-      );
+        const parentExists = categories.some(
+            (item) =>
+                item.id === form.parentId &&
+                !item.parentId
+        );
 
-      if (!parentExists || form.parentId === form.id) {
-        setMessage('Please select a valid main category.');
-        return;
-      }
-
+        if (!parentExists || form.parentId === form.id) {
+            setMessage('Please select a valid main category.');
+            return;
+        }
     }
 
+    // COLLECT FORM DATA
     const categoryData = {
-      name,
-      slug,
-      parentId: form.parentId || null,
-      showInNav: form.showInNav,
+        name,
+        slug,
+        parentId: form.parentId || null,
+        showInNav: form.showInNav,
     };
 
-
+    // EDIT (API NOT CONNECTED YET)
     if (editing) {
 
-      setCategories((previous) =>
-        previous.map((item) =>
-          item.id === form.id
-            ? { ...item, ...categoryData }
-            : item
-        )
-      );
+        setCategories((previous) =>
+            previous.map((item) =>
+                item.id === form.id
+                    ? { ...item, ...categoryData }
+                    : item
+            )
+        );
 
-      setMessage('Category updated successfully!');
-
-    } else {
-
-      const newCategory = {
-        id: Date.now().toString(),
-        ...categoryData,
-      };
-
-      setCategories((previous) => [
-        ...previous,
-        newCategory,
-      ]);
-
-      setMessage('Category added successfully!');
+        setMessage('Category updated in this session.');
 
     }
 
+    // ADD CATEGORY (POST API)
+    else {
 
+        try {
+
+            const resdata = await addNevigation(categoryData);
+
+            console.log('POST Response:', resdata);
+
+            if (!resdata?.success) {
+
+                setMessage(
+                    resdata?.message || 'Category could not be added.'
+                );
+
+                toast.error(
+                    resdata?.message || 'Something went wrong!'
+                );
+
+                return;
+            }
+
+            // GET INSERTED ID FROM SERVER
+            const newCategory = {
+                id: String(resdata.data.insertedId),
+                ...categoryData,
+            };
+
+            // UPDATE UI
+            setCategories((previous) => [
+                ...previous,
+                newCategory,
+            ]);
+
+            setMessage('Category added successfully!');
+
+            toast.success('Category added successfully!');
+
+        } catch (error) {
+
+            console.error('Category Error:', error);
+
+            setMessage('Something went wrong!');
+
+            toast.error('Failed to add category.');
+
+            return;
+        }
+    }
+
+    // RESET FORM
     setForm({
-      id: null,
-      name: '',
-      slug: '',
-      parentId: '',
-      showInNav: true,
+        id: null,
+        name: '',
+        slug: '',
+        parentId: '',
+        showInNav: true,
     });
 
     setEditing(false);
 
-  };
+};
+
 
 
   // DELETE CATEGORY
